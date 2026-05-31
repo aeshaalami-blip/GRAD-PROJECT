@@ -2,3 +2,4 @@ streamlit
 youtube-comment-downloader
 vaderSentiment
 plotly
+google-api-python-client
