@@ -427,10 +427,11 @@ def fmt_duration(s):
 # ══════════════════════════════════════════════════════════════════════════════
 # CHART HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
-def _chart_base(height=280):
+def _chart_base(height=280, margin_b=40):
     return dict(
-        paper_bgcolor=BG, plot_bgcolor=BG, height=height, font_family=FONT,
-        margin=dict(l=10, r=10, t=30, b=40),
+        paper_bgcolor=BG, plot_bgcolor=BG, height=height,
+        font=dict(family=FONT),
+        margin=dict(l=10, r=10, t=30, b=margin_b),
     )
 
 
@@ -1766,13 +1767,12 @@ if st.session_state.cmp_ran and st.session_state.cmp_a and st.session_state.cmp_
             textposition="outside", textfont=dict(size=10),
         ))
         fig_v.update_layout(
-            **_chart_base(300),
+            **_chart_base(300, margin_b=90),
             title=dict(text="Top 5 Videos by Views", font=dict(size=12, color="#64748B"), x=0),
             barmode="group",
             xaxis=dict(showgrid=False, tickfont=dict(size=9, color="#374151"), tickangle=-20),
             yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10)),
             legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.3),
-            margin=dict(l=10, r=10, t=30, b=90),
         )
         st.plotly_chart(fig_v, use_container_width=True, config={"displayModeBar": False},
                         key="cmp_views_bar")
@@ -1797,14 +1797,13 @@ if st.session_state.cmp_ran and st.session_state.cmp_a and st.session_state.cmp_
             textposition="outside", textfont=dict(size=10),
         ))
         fig_e.update_layout(
-            **_chart_base(300),
+            **_chart_base(300, margin_b=90),
             title=dict(text="Top 5 Videos by Engagement", font=dict(size=12, color="#64748B"), x=0),
             barmode="group",
             xaxis=dict(showgrid=False, tickfont=dict(size=9, color="#374151"), tickangle=-20),
             yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10),
                        ticksuffix="%"),
             legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.3),
-            margin=dict(l=10, r=10, t=30, b=90),
         )
         st.plotly_chart(fig_e, use_container_width=True, config={"displayModeBar": False},
                         key="cmp_eng_bar")
@@ -1852,14 +1851,13 @@ if st.session_state.cmp_ran and st.session_state.cmp_a and st.session_state.cmp_
         textposition="outside", textfont=dict(size=11),
     ))
     fig_age.update_layout(
-        **_chart_base(280),
+        **_chart_base(280, margin_b=60),
         title=dict(text="Audience Age Distribution", font=dict(size=12, color="#64748B"), x=0),
         barmode="group",
         xaxis=dict(showgrid=False, tickfont=dict(color="#374151", size=11)),
         yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10),
                    ticksuffix="%"),
         legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.18),
-        margin=dict(l=10, r=10, t=30, b=60),
     )
     st.plotly_chart(fig_age, use_container_width=True, config={"displayModeBar": False},
                     key="cmp_age_bar")
