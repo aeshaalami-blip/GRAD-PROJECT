@@ -1546,6 +1546,409 @@ if st.session_state.ran_analysis and st.session_state.enriched:
             st.rerun()
 
 # ══════════════════════════════════════════════════════════════════════════════
+# COMPARE MODE
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+st.markdown('<span class="section-label">Compare Mode</span>', unsafe_allow_html=True)
+st.markdown("## ⚔️  Topic vs Topic Comparison")
+st.markdown(
+    "Compare two topics, artists, brands, or keywords head-to-head — "
+    "views, engagement, audience, sentiment, and revenue side by side."
+)
+st.markdown("")
+
+# ── Session state for compare ─────────────────────────────────────────────────
+for _ck, _cv in [("cmp_a", []), ("cmp_b", []), ("cmp_kw_a", ""), ("cmp_kw_b", ""),
+                 ("cmp_ran", False)]:
+    if _ck not in st.session_state:
+        st.session_state[_ck] = _cv
+
+# ── Input row ─────────────────────────────────────────────────────────────────
+cmp_col1, vs_col, cmp_col2 = st.columns([5, 1, 5])
+with cmp_col1:
+    cmp_kw_a = st.text_input("🔵  Topic A", placeholder="e.g.  Taylor Swift",
+                              key="cmp_input_a")
+with vs_col:
+    st.markdown(
+        '<div style="display:flex;align-items:center;justify-content:center;'
+        'height:100%;padding-top:28px;font-size:1.3rem;font-weight:900;color:#64748B">VS</div>',
+        unsafe_allow_html=True,
+    )
+with cmp_col2:
+    cmp_kw_b = st.text_input("🔴  Topic B", placeholder="e.g.  Beyoncé",
+                              key="cmp_input_b")
+
+cmp_n_col, cmp_btn_col, cmp_demo_col, _ = st.columns([1, 1.2, 1.2, 2])
+with cmp_n_col:
+    cmp_n = st.selectbox("Videos each", [5, 10, 20], index=1, key="cmp_n")
+with cmp_btn_col:
+    cmp_btn = st.button("⚔️  Compare Now", use_container_width=True, key="cmp_run")
+with cmp_demo_col:
+    cmp_demo_btn = st.button("🎮  Demo Compare", use_container_width=True, key="cmp_demo")
+
+# ── Demo data ─────────────────────────────────────────────────────────────────
+DEMO_CMP_A_KW = "Taylor Swift"
+DEMO_CMP_B_KW = "Beyoncé"
+DEMO_CMP_A = [
+    {"id":"ts001","title":"Taylor Swift — Anti-Hero (Official Music Video)","channel":"TaylorSwiftVEVO","published":"2022-10-21","description":"Anti-Hero from Midnights album, biggest pop release of 2022","thumbnail":""},
+    {"id":"ts002","title":"Taylor Swift Eras Tour Full Concert Highlights","channel":"SwiftiesCentral","published":"2023-08-15","description":"Best moments from the record-breaking Eras Tour across all albums","thumbnail":""},
+    {"id":"ts003","title":"Taylor Swift vs Scooter Braun: The Full Story","channel":"MusicNews","published":"2023-06-10","description":"Complete timeline of the masters dispute and re-recordings","thumbnail":""},
+    {"id":"ts004","title":"Every Taylor Swift Album Ranked (Swiftie Edition)","channel":"PopCritic","published":"2024-01-20","description":"Deep dive ranking all 11 Taylor Swift albums from debut to Tortured Poets","thumbnail":""},
+    {"id":"ts005","title":"Taylor Swift — Shake It Off (Official Video)","channel":"TaylorSwiftVEVO","published":"2014-08-18","description":"Official music video for Shake It Off from the 1989 album","thumbnail":""},
+    {"id":"ts006","title":"Taylor Swift Speaks Out on AI and Music Rights","channel":"EntertainmentTonight","published":"2024-03-05","description":"Taylor Swift addresses the use of AI in music creation and artist rights","thumbnail":""},
+    {"id":"ts007","title":"Taylor Swift NFL Romance: Travis Kelce Timeline","channel":"E!News","published":"2023-10-01","description":"Everything we know about Taylor Swift and Travis Kelce's relationship","thumbnail":""},
+    {"id":"ts008","title":"Taylor Swift Songwriting Masterclass","channel":"MusicMasterclass","published":"2023-11-12","description":"Breakdown of Taylor Swift's unique storytelling and songwriting techniques","thumbnail":""},
+    {"id":"ts009","title":"Taylor Swift Fearless Re-Recording — What Changed?","channel":"MusicAnalysis","published":"2021-04-09","description":"Comparing Fearless (Taylor's Version) to the original with audio analysis","thumbnail":""},
+    {"id":"ts010","title":"Taylor Swift Net Worth & Business Empire 2024","channel":"WealthInsider","published":"2024-02-14","description":"How Taylor Swift became a billionaire through music, tours, and brand deals","thumbnail":""},
+]
+DEMO_CMP_B = [
+    {"id":"by001","title":"Beyoncé — CUFF IT (Official Video)","channel":"BeyoncéVEVO","published":"2022-11-11","description":"CUFF IT from the Renaissance album, the summer anthem of 2022","thumbnail":""},
+    {"id":"by002","title":"Beyoncé Renaissance World Tour Highlights","channel":"BeyHive","published":"2023-09-20","description":"Iconic moments from Beyoncé's record-breaking Renaissance World Tour","thumbnail":""},
+    {"id":"by003","title":"Beyoncé Cowboy Carter Album Full Reaction","channel":"MusicReacts","published":"2024-03-29","description":"First listen reaction to Beyoncé's country album Cowboy Carter","thumbnail":""},
+    {"id":"by004","title":"Beyoncé vs Taylor Swift: Who Is the Bigger Star?","channel":"PopDebate","published":"2023-12-15","description":"Comparing album sales, streaming records, and cultural impact","thumbnail":""},
+    {"id":"by005","title":"Beyoncé — Single Ladies (Official Video)","channel":"BeyoncéVEVO","published":"2009-10-02","description":"Classic Single Ladies music video, one of the most iconic of all time","thumbnail":""},
+    {"id":"by006","title":"Beyoncé Lemonade Visual Album — Every Scene Explained","channel":"FilmTheory","published":"2023-05-18","description":"Deep analysis of every visual and lyrical reference in Lemonade","thumbnail":""},
+    {"id":"by007","title":"Beyoncé's Business Empire: Music, Fashion & Film","channel":"ForbesWomen","published":"2024-01-10","description":"How Beyoncé built a $500M+ empire through Ivy Park, Parkwood Entertainment","thumbnail":""},
+    {"id":"by008","title":"Beyoncé Renaissance: The Country Pivot Explained","channel":"MusicAnalysis","published":"2024-04-02","description":"Why Beyoncé's move into country music is a cultural and business masterstroke","thumbnail":""},
+    {"id":"by009","title":"Beyoncé Documentary: Life is But a Dream","channel":"HBO","published":"2013-02-16","description":"Intimate look at Beyoncé's life and career in her own words","thumbnail":""},
+    {"id":"by010","title":"Beyoncé Net Worth 2024 — Richest Female Musician?","channel":"WealthInsider","published":"2024-03-01","description":"Breaking down Beyoncé's estimated $500M+ net worth and revenue streams","thumbnail":""},
+]
+
+if cmp_demo_btn:
+    st.session_state.cmp_kw_a = DEMO_CMP_A_KW
+    st.session_state.cmp_kw_b = DEMO_CMP_B_KW
+    st.session_state.cmp_a    = [enrich_video(v, keyword=DEMO_CMP_A_KW) for v in DEMO_CMP_A]
+    st.session_state.cmp_b    = [enrich_video(v, keyword=DEMO_CMP_B_KW) for v in DEMO_CMP_B]
+    st.session_state.cmp_ran  = True
+    st.success(f"Demo comparison loaded — **{DEMO_CMP_A_KW}** vs **{DEMO_CMP_B_KW}**")
+
+if cmp_btn:
+    if not cmp_kw_a.strip() or not cmp_kw_b.strip():
+        st.error("Please enter both Topic A and Topic B.")
+    elif not _api_key.strip():
+        st.error("API key required. Use Demo Compare to explore without a key.")
+    else:
+        with st.spinner(f'Searching "{cmp_kw_a}" and "{cmp_kw_b}"…'):
+            vids_a, err_a = search_youtube(cmp_kw_a.strip(), _api_key.strip(), cmp_n)
+            vids_b, err_b = search_youtube(cmp_kw_b.strip(), _api_key.strip(), cmp_n)
+        if err_a or err_b:
+            st.error(f"API error: {err_a or err_b}")
+        elif not vids_a or not vids_b:
+            st.warning("One or both searches returned no results. Try different keywords.")
+        else:
+            prog_c = st.progress(0); stat_c = st.empty()
+            stat_c.markdown("⚙️ **Enriching videos…**")
+            enriched_a, enriched_b = [], []
+            total_c = len(vids_a) + len(vids_b)
+            for i, v in enumerate(vids_a):
+                prog_c.progress((i+1)/total_c)
+                enriched_a.append(enrich_video(v, keyword=cmp_kw_a.strip()))
+            for i, v in enumerate(vids_b):
+                prog_c.progress((len(vids_a)+i+1)/total_c)
+                enriched_b.append(enrich_video(v, keyword=cmp_kw_b.strip()))
+            prog_c.progress(1.0); stat_c.markdown("✅ **Done!**")
+            time.sleep(0.3); prog_c.empty(); stat_c.empty()
+            st.session_state.cmp_kw_a = cmp_kw_a.strip()
+            st.session_state.cmp_kw_b = cmp_kw_b.strip()
+            st.session_state.cmp_a    = enriched_a
+            st.session_state.cmp_b    = enriched_b
+            st.session_state.cmp_ran  = True
+            st.rerun()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# COMPARE DASHBOARD
+# ══════════════════════════════════════════════════════════════════════════════
+if st.session_state.cmp_ran and st.session_state.cmp_a and st.session_state.cmp_b:
+    ca       = st.session_state.cmp_a
+    cb       = st.session_state.cmp_b
+    kw_a     = st.session_state.cmp_kw_a
+    kw_b     = st.session_state.cmp_kw_b
+    COLOR_A  = "#0369A1"   # blue
+    COLOR_B  = "#DC2626"   # red
+
+    # ── Aggregate stats ───────────────────────────────────────────────────────
+    def agg(videos):
+        return {
+            "views":    sum(v["views"]    for v in videos),
+            "likes":    sum(v["likes"]    for v in videos),
+            "comments": sum(v["comments"] for v in videos),
+            "eng":      round(sum(v["eng_rate"] for v in videos) / len(videos), 2),
+            "revenue":  sum(v["revenue_est"] for v in videos),
+            "viral":    sum(1 for v in videos if v["velocity"] == "🔥 Viral"),
+            "rising":   sum(1 for v in videos if v["velocity"] == "⬆ Rising"),
+            "dur":      sum(v["duration_s"] for v in videos) / len(videos),
+        }
+
+    sa, sb = agg(ca), agg(cb)
+
+    # ── Winner badge ──────────────────────────────────────────────────────────
+    score_a = (
+        (1 if sa["views"]    > sb["views"]    else 0) +
+        (1 if sa["eng"]      > sb["eng"]      else 0) +
+        (1 if sa["viral"]    > sb["viral"]    else 0) +
+        (1 if sa["revenue"]  > sb["revenue"]  else 0)
+    )
+    score_b = 4 - score_a
+    winner  = kw_a if score_a >= score_b else kw_b
+    win_col = COLOR_A if score_a >= score_b else COLOR_B
+
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    st.markdown(f"""
+<div style="background:linear-gradient(135deg,{win_col}15,{win_col}05);
+     border:2px solid {win_col}44;border-radius:16px;padding:1.2rem 1.5rem;
+     text-align:center;margin-bottom:1.5rem">
+  <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;
+       letter-spacing:0.1em;color:{win_col};margin-bottom:4px">Overall Winner</div>
+  <div style="font-size:2rem;font-weight:900;color:{win_col}">🏆 {winner}</div>
+  <div style="font-size:0.8rem;color:#64748B;margin-top:4px">
+    Leading in {max(score_a,score_b)} out of 4 key metrics
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    # ── Score cards ───────────────────────────────────────────────────────────
+    st.markdown("### Head-to-Head Metrics")
+    metrics = [
+        ("👁 Total Views",     fmt_number(sa["views"]),   fmt_number(sb["views"]),   sa["views"]   > sb["views"]),
+        ("📊 Avg Engagement",  f'{sa["eng"]}%',           f'{sb["eng"]}%',           sa["eng"]     > sb["eng"]),
+        ("💬 Total Comments",  fmt_number(sa["comments"]),fmt_number(sb["comments"]),sa["comments"]> sb["comments"]),
+        ("💰 Est. Revenue",    f'${fmt_number(int(sa["revenue"]))}', f'${fmt_number(int(sb["revenue"]))}', sa["revenue"] > sb["revenue"]),
+        ("🔥 Viral Videos",    str(sa["viral"]),          str(sb["viral"]),          sa["viral"]   > sb["viral"]),
+        ("⬆ Rising Videos",   str(sa["rising"]),         str(sb["rising"]),         sa["rising"]  > sb["rising"]),
+    ]
+
+    for label, val_a, val_b, a_wins in metrics:
+        wa = "🏆 " if a_wins  else ""
+        wb = "🏆 " if not a_wins else ""
+        ca_bg = f"{COLOR_A}12" if a_wins  else "#F8FAFC"
+        cb_bg = f"{COLOR_B}12" if not a_wins else "#F8FAFC"
+        ca_border = f"2px solid {COLOR_A}55" if a_wins  else "1px solid #E2E8F0"
+        cb_border = f"2px solid {COLOR_B}55" if not a_wins else "1px solid #E2E8F0"
+        st.markdown(f"""
+<div style="display:grid;grid-template-columns:1fr 80px 1fr;gap:8px;margin-bottom:8px;align-items:center">
+  <div style="background:{ca_bg};border:{ca_border};border-radius:10px;
+       padding:10px 14px;text-align:center">
+    <div style="font-size:1.1rem;font-weight:800;color:{COLOR_A}">{wa}{val_a}</div>
+    <div style="font-size:0.7rem;color:#64748B;font-weight:600">{kw_a}</div>
+  </div>
+  <div style="text-align:center;font-size:0.72rem;font-weight:700;color:#94A3B8">{label}</div>
+  <div style="background:{cb_bg};border:{cb_border};border-radius:10px;
+       padding:10px 14px;text-align:center">
+    <div style="font-size:1.1rem;font-weight:800;color:{COLOR_B}">{wb}{val_b}</div>
+    <div style="font-size:0.7rem;color:#64748B;font-weight:600">{kw_b}</div>
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+
+    # ── Charts ────────────────────────────────────────────────────────────────
+    st.markdown("### Visual Comparison")
+    ch1, ch2 = st.columns(2)
+
+    # Views grouped bar
+    with ch1:
+        top_a = sorted(ca, key=lambda v: -v["views"])[:5]
+        top_b = sorted(cb, key=lambda v: -v["views"])[:5]
+        fig_v = go.Figure()
+        fig_v.add_trace(go.Bar(
+            name=kw_a,
+            x=[v["title"][:22]+"…" if len(v["title"])>22 else v["title"] for v in top_a],
+            y=[v["views"] for v in top_a],
+            marker=dict(color=COLOR_A, opacity=0.85, line=dict(width=0)),
+            text=[fmt_number(v["views"]) for v in top_a],
+            textposition="outside", textfont=dict(size=10),
+        ))
+        fig_v.add_trace(go.Bar(
+            name=kw_b,
+            x=[v["title"][:22]+"…" if len(v["title"])>22 else v["title"] for v in top_b],
+            y=[v["views"] for v in top_b],
+            marker=dict(color=COLOR_B, opacity=0.85, line=dict(width=0)),
+            text=[fmt_number(v["views"]) for v in top_b],
+            textposition="outside", textfont=dict(size=10),
+        ))
+        fig_v.update_layout(
+            **_chart_base(300),
+            title=dict(text="Top 5 Videos by Views", font=dict(size=12, color="#64748B"), x=0),
+            barmode="group",
+            xaxis=dict(showgrid=False, tickfont=dict(size=9, color="#374151"), tickangle=-20),
+            yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10)),
+            legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.3),
+            margin=dict(l=10, r=10, t=30, b=90),
+        )
+        st.plotly_chart(fig_v, use_container_width=True, config={"displayModeBar": False},
+                        key="cmp_views_bar")
+
+    # Engagement comparison
+    with ch2:
+        fig_e = go.Figure()
+        fig_e.add_trace(go.Bar(
+            name=kw_a,
+            x=[v["title"][:22]+"…" if len(v["title"])>22 else v["title"] for v in sorted(ca, key=lambda v: -v["eng_rate"])[:5]],
+            y=[v["eng_rate"] for v in sorted(ca, key=lambda v: -v["eng_rate"])[:5]],
+            marker=dict(color=COLOR_A, opacity=0.85, line=dict(width=0)),
+            text=[f'{v["eng_rate"]}%' for v in sorted(ca, key=lambda v: -v["eng_rate"])[:5]],
+            textposition="outside", textfont=dict(size=10),
+        ))
+        fig_e.add_trace(go.Bar(
+            name=kw_b,
+            x=[v["title"][:22]+"…" if len(v["title"])>22 else v["title"] for v in sorted(cb, key=lambda v: -v["eng_rate"])[:5]],
+            y=[v["eng_rate"] for v in sorted(cb, key=lambda v: -v["eng_rate"])[:5]],
+            marker=dict(color=COLOR_B, opacity=0.85, line=dict(width=0)),
+            text=[f'{v["eng_rate"]}%' for v in sorted(cb, key=lambda v: -v["eng_rate"])[:5]],
+            textposition="outside", textfont=dict(size=10),
+        ))
+        fig_e.update_layout(
+            **_chart_base(300),
+            title=dict(text="Top 5 Videos by Engagement", font=dict(size=12, color="#64748B"), x=0),
+            barmode="group",
+            xaxis=dict(showgrid=False, tickfont=dict(size=9, color="#374151"), tickangle=-20),
+            yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10),
+                       ticksuffix="%"),
+            legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.3),
+            margin=dict(l=10, r=10, t=30, b=90),
+        )
+        st.plotly_chart(fig_e, use_container_width=True, config={"displayModeBar": False},
+                        key="cmp_eng_bar")
+
+    # Velocity comparison donut side by side
+    ch3, ch4 = st.columns(2)
+    with ch3:
+        st.plotly_chart(velocity_donut(ca), use_container_width=True,
+                        config={"displayModeBar": False}, key="cmp_vel_a")
+        st.markdown(f'<p style="text-align:center;font-size:0.8rem;font-weight:700;color:{COLOR_A}">{kw_a} — Velocity Mix</p>',
+                    unsafe_allow_html=True)
+    with ch4:
+        st.plotly_chart(velocity_donut(cb), use_container_width=True,
+                        config={"displayModeBar": False}, key="cmp_vel_b")
+        st.markdown(f'<p style="text-align:center;font-size:0.8rem;font-weight:700;color:{COLOR_B}">{kw_b} — Velocity Mix</p>',
+                    unsafe_allow_html=True)
+
+    # Audience age comparison
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    st.markdown("### Audience Age Comparison")
+
+    agg_age_a = defaultdict(float)
+    agg_age_b = defaultdict(float)
+    for v in ca:
+        for age, pct in v["audience_age"].items(): agg_age_a[age] += pct
+    for v in cb:
+        for age, pct in v["audience_age"].items(): agg_age_b[age] += pct
+    agg_age_a = {k: round(v/len(ca)) for k, v in agg_age_a.items()}
+    agg_age_b = {k: round(v/len(cb)) for k, v in agg_age_b.items()}
+
+    ages = ["13-17", "18-24", "25-34", "35-44", "45+"]
+    fig_age = go.Figure()
+    fig_age.add_trace(go.Bar(
+        name=kw_a, x=ages,
+        y=[agg_age_a.get(a, 0) for a in ages],
+        marker=dict(color=COLOR_A, opacity=0.85, line=dict(width=0)),
+        text=[f'{agg_age_a.get(a,0)}%' for a in ages],
+        textposition="outside", textfont=dict(size=11),
+    ))
+    fig_age.add_trace(go.Bar(
+        name=kw_b, x=ages,
+        y=[agg_age_b.get(a, 0) for a in ages],
+        marker=dict(color=COLOR_B, opacity=0.85, line=dict(width=0)),
+        text=[f'{agg_age_b.get(a,0)}%' for a in ages],
+        textposition="outside", textfont=dict(size=11),
+    ))
+    fig_age.update_layout(
+        **_chart_base(280),
+        title=dict(text="Audience Age Distribution", font=dict(size=12, color="#64748B"), x=0),
+        barmode="group",
+        xaxis=dict(showgrid=False, tickfont=dict(color="#374151", size=11)),
+        yaxis=dict(showgrid=True, gridcolor=GRID, tickfont=dict(color=TICK, size=10),
+                   ticksuffix="%"),
+        legend=dict(font=dict(size=11), orientation="h", x=0.5, xanchor="center", y=-0.18),
+        margin=dict(l=10, r=10, t=30, b=60),
+    )
+    st.plotly_chart(fig_age, use_container_width=True, config={"displayModeBar": False},
+                    key="cmp_age_bar")
+
+    # ── Top videos from each ──────────────────────────────────────────────────
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    st.markdown("### Top Videos — Side by Side")
+    tv_a, tv_b = st.columns(2)
+
+    with tv_a:
+        st.markdown(f'<p style="font-weight:800;color:{COLOR_A};font-size:0.95rem;margin-bottom:8px">🔵 {kw_a}</p>',
+                    unsafe_allow_html=True)
+        for rank, v in enumerate(sorted(ca, key=lambda x: -x["views"])[:5], 1):
+            vel_c, vel_bg = TREND_VELOCITY.get(v["velocity"], ("#64748B","#F8FAFC"))
+            st.markdown(f"""
+<div style="background:#fff;border:1px solid #E2E8F0;border-left:3px solid {COLOR_A};
+     border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:5px;
+     box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+    <div>
+      <div style="font-size:0.82rem;font-weight:700;color:#0F172A;margin-bottom:2px">
+        #{rank} {v['title'][:50]}{'…' if len(v['title'])>50 else ''}
+      </div>
+      <div style="font-size:0.72rem;color:#64748B">
+        👁 {fmt_number(v['views'])} &nbsp;·&nbsp; 📊 {v['eng_rate']}%
+      </div>
+    </div>
+    <span style="background:{vel_bg};color:{vel_c};border:1px solid {vel_c}33;
+      padding:2px 7px;border-radius:20px;font-size:0.68rem;font-weight:700;white-space:nowrap">
+      {v['velocity']}
+    </span>
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    with tv_b:
+        st.markdown(f'<p style="font-weight:800;color:{COLOR_B};font-size:0.95rem;margin-bottom:8px">🔴 {kw_b}</p>',
+                    unsafe_allow_html=True)
+        for rank, v in enumerate(sorted(cb, key=lambda x: -x["views"])[:5], 1):
+            vel_c, vel_bg = TREND_VELOCITY.get(v["velocity"], ("#64748B","#F8FAFC"))
+            st.markdown(f"""
+<div style="background:#fff;border:1px solid #E2E8F0;border-left:3px solid {COLOR_B};
+     border-radius:10px;padding:0.7rem 0.9rem;margin-bottom:5px;
+     box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+    <div>
+      <div style="font-size:0.82rem;font-weight:700;color:#0F172A;margin-bottom:2px">
+        #{rank} {v['title'][:50]}{'…' if len(v['title'])>50 else ''}
+      </div>
+      <div style="font-size:0.72rem;color:#64748B">
+        👁 {fmt_number(v['views'])} &nbsp;·&nbsp; 📊 {v['eng_rate']}%
+      </div>
+    </div>
+    <span style="background:{vel_bg};color:{vel_c};border:1px solid {vel_c}33;
+      padding:2px 7px;border-radius:20px;font-size:0.68rem;font-weight:700;white-space:nowrap">
+      {v['velocity']}
+    </span>
+  </div>
+</div>""", unsafe_allow_html=True)
+
+    # ── Summary insight ───────────────────────────────────────────────────────
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    views_winner  = kw_a if sa["views"]   > sb["views"]   else kw_b
+    eng_winner    = kw_a if sa["eng"]     > sb["eng"]     else kw_b
+    rev_winner    = kw_a if sa["revenue"] > sb["revenue"] else kw_b
+    viral_winner  = kw_a if sa["viral"]   > sb["viral"]   else kw_b
+    dom_age_a     = max(agg_age_a, key=agg_age_a.get)
+    dom_age_b     = max(agg_age_b, key=agg_age_b.get)
+
+    st.markdown(f"""
+<div class="callout">
+  <strong>Comparison Summary — {kw_a} vs {kw_b}:</strong><br><br>
+  🏆 <strong>Overall winner: {winner}</strong> (leads in {max(score_a,score_b)}/4 metrics)<br>
+  👁 <strong>More views:</strong> {views_winner}<br>
+  📊 <strong>Higher engagement:</strong> {eng_winner}<br>
+  💰 <strong>More revenue potential:</strong> {rev_winner}<br>
+  🔥 <strong>More viral content:</strong> {viral_winner}<br><br>
+  👥 <strong>{kw_a}</strong> primary audience: <strong>{dom_age_a}</strong> &nbsp;·&nbsp;
+     <strong>{kw_b}</strong> primary audience: <strong>{dom_age_b}</strong>
+</div>""", unsafe_allow_html=True)
+
+    # Reset compare
+    rc_col, _ = st.columns([1, 4])
+    with rc_col:
+        if st.button("🔄  Reset Comparison", use_container_width=True, key="cmp_reset"):
+            for k in ["cmp_a","cmp_b","cmp_kw_a","cmp_kw_b","cmp_ran"]:
+                st.session_state[k] = [] if k in ("cmp_a","cmp_b") else ("" if "kw" in k else False)
+            st.rerun()
+
+# ══════════════════════════════════════════════════════════════════════════════
 # FOOTER
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
